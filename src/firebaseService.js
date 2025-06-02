@@ -13,19 +13,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export const fetchRSVPData = async (code) => {
-  try {
-    const docRef = doc(db, 'guests', code);
-    const docSnap = await getDoc(docRef);
-    console.log('Fetched Doc:', docSnap.exists(), docSnap.data());
-    return docSnap.exists() ? docSnap.data() : null;
-  } catch (e) {
-    console.error('Firestore fetch error:', e);
-    throw e;
-  }
+export const fetchFamily  = async (code) => {
+  const ref = doc(db, 'rsvps', code);
+  const snap = await getDoc(ref);
+  return snap.exists() ? snap.data() : null;
 };
 
-export const saveRSVPData = async (code, guests, contact) => {
-  const docRef = doc(db, 'guests', code);
-  await updateDoc(docRef, { guests, contact });
+export const saveRSVP  = async (code, guests, contact) => {
+  const ref = doc(db, 'rsvps', code);
+  await updateDoc(ref, { guests, contact });
 };

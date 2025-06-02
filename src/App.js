@@ -1,74 +1,60 @@
 import React, { useState } from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import {
-  Spinner,
-  Button,
-  Form,
-  Container,
-  Alert,
-  Navbar,
-  Nav,
-} from 'react-bootstrap';
+import { fetchFamily } from './firebaseService';
 import RSVPForm from './RSVPForm';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   const [code, setCode] = useState('');
+  const [family, setFamily] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [rsvpCode, setRsvpCode] = useState(null);
   const [error, setError] = useState('');
 
-  const handleSearch = async () => {
+  const handleCodeSubmit = async (e) => {
+    e.preventDefault();
     setLoading(true);
     setError('');
     try {
-      const response = await RSVPForm.fetchRSVPData(code);
-      if (response) {
-        setRsvpCode(code);
+      const data = await fetchFamily(code.trim().toUpperCase());
+      if (!data) {
+        setError('Invalid reference code.');
+        setFamily(null);
       } else {
-        setError('Reference code not found');
+        setFamily(data);
       }
     } catch (e) {
-      setError('Error fetching RSVP data');
+      setError('Error fetching RSVP data.');
+      setFamily(null);
     }
     setLoading(false);
   };
 
-  const handleDone = () => {
-    setRsvpCode(null);
+  const reset = () => {
     setCode('');
+    setFamily(null);
+    setError('');
   };
 
   return (
-    <>
-      <Navbar bg="dark" variant="dark">
-        <Container>
-          <Navbar.Brand>Wedding RSVP</Navbar.Brand>
-          <Nav className="me-auto">
-            <Nav.Link onClick={handleDone}>Home</Nav.Link>
-          </Nav>
-        </Container>
-      </Navbar>
-
-      <Container className="mt-4">
-        {!rsvpCode ? (
-          <>
-            <h3>Search Your RSVP Code</h3>
-            <Form.Control
-              type="text"
-              placeholder="Enter Reference Code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-            />
-            <Button className="mt-2" onClick={handleSearch} disabled={loading}>
-              {loading ? <Spinner animation="border" size="sm" /> : 'Search'}
-            </Button>
-            {error && <Alert variant="danger" className="mt-2">{error}</Alert>}
-          </>
-        ) : (
-          <RSVPForm code={rsvpCode} onDone={handleDone} />
-        )}
-      </Container>
-    </>
+    <div className="container mt-4">
+      {!family ? (
+        <form onSubmit={handleCodeSubmit}>
+          <h2>Enter Reference Code</h2>
+          <input
+            className="form-control mb-2"
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Enter your code"
+            required
+          />
+          <button className="btn btn-primary" type="submit" disabled={loading}>
+            {loading ? 'Checking...' : 'Submit'}
+          </button>
+          {error && <div className="text-danger mt-2">{error}</div>}
+        </form>
+      ) : (
+        <RSVPForm family={family} code={code} reset={reset} />
+      )}
+    </div>
   );
 }
 
