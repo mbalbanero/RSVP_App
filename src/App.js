@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { fetchFamily } from './firebaseService';
 import RSVPForm from './RSVPForm';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import Alert from 'react-bootstrap/Alert';
 
 function App() {
   const [code, setCode] = useState('');
@@ -49,7 +50,7 @@ function App() {
           <button className="btn btn-primary" type="submit" disabled={loading}>
             {loading ? 'Checking...' : 'Submit'}
           </button>
-          {error && <div className="text-danger mt-2">{error}</div>}
+          {error && <Alert variant="danger" className="mt-2">{error}</Alert>}
         </form>
       ) : (
         <RSVPForm family={family} code={code} reset={reset} />

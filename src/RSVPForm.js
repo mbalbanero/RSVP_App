@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import ContactInfo from './components/ContactInfo';
 import GuestList from './components/GuestList';
 import { saveRSVP } from './firebaseService';
-import { Button, Spinner } from 'react-bootstrap';
+import { Button, Spinner, Alert } from 'react-bootstrap';
 
 export default function RSVPForm({ family, code, reset }) {
   const [guests, setGuests] = useState(family.guests || []);
   const [contact, setContact] = useState(family.contact || { email: '', phone: '' });
   const [saving, setSaving] = useState(false);
+  const [contactError, setContactError] = useState('');
 
   // Autosave function
   const autoSave = async (newGuests, newContact) => {
@@ -33,9 +34,13 @@ export default function RSVPForm({ family, code, reset }) {
     autoSave(guests, newContact);
   };
 
-
-  // Done button handler: autosave and reset to search
+  // Done button handler: validate required contact fields before saving
   const handleDone = async () => {
+    if (!contact.email.trim() || !contact.phone.trim()) {
+      setContactError('Email and Mobile Number are required.');
+      return;
+    }
+    setContactError('');
     await autoSave(guests, contact);
     reset();
   };
@@ -51,8 +56,14 @@ export default function RSVPForm({ family, code, reset }) {
         guests={guests}
         updateGuests={updateGuests}
         seatLimit={family.seats}
+        contact={contact} 
       />
 
+      {contactError && (
+        <Alert variant="danger" onClose={() => setContactError('')} dismissible>
+          {contactError}
+        </Alert>
+      )}
 
       <Button variant="success" className="mt-2" onClick={handleDone} disabled={saving}>
         {saving ? (

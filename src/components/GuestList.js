@@ -1,8 +1,7 @@
-// src/GuestList.js
 import React, { useState } from 'react';
-import { Button, Form, Row, Col } from 'react-bootstrap';
+import { Button, Form, Row, Col, Alert } from 'react-bootstrap';
 
-export default function GuestList({ guests, updateGuests, seatLimit }) {
+export default function GuestList({ guests, updateGuests, seatLimit, contact }) {
   const [editIndex, setEditIndex] = useState(null);
   const [localGuest, setLocalGuest] = useState(null);
   const [newGuest, setNewGuest] = useState({
@@ -10,6 +9,7 @@ export default function GuestList({ guests, updateGuests, seatLimit }) {
     firstName: '',
     lastName: '',
   });
+  const [alertMessage, setAlertMessage] = useState('');
 
   const startEdit = (index) => {
     setEditIndex(index);
@@ -31,7 +31,7 @@ export default function GuestList({ guests, updateGuests, seatLimit }) {
 
   const saveEdit = () => {
     if (!localGuest.firstName.trim() || !localGuest.lastName.trim()) {
-      alert('First Name and Last Name are required.');
+      setAlertMessage('First Name and Last Name are required.');
       return;
     }
     const updatedGuests = [...guests];
@@ -48,13 +48,17 @@ export default function GuestList({ guests, updateGuests, seatLimit }) {
   };
 
   const addGuest = () => {
-    if (guests.length >= seatLimit) {
-      alert(`Only ${seatLimit} guest(s) allowed.`);
+    // Check if Email and Mobile Number are provided in the contact details
+    if (!contact.email.trim() || !contact.phone.trim()) {
+      setAlertMessage('Please fill in your Email and Mobile Number in your contact info before adding a guest.');
       return;
     }
-
+    if (guests.length >= seatLimit) {
+      setAlertMessage(`Only ${seatLimit} guest(s) allowed.`);
+      return;
+    }
     if (!newGuest.firstName.trim() || !newGuest.lastName.trim()) {
-      alert('First Name and Last Name are required.');
+      setAlertMessage('First Name and Last Name are required.');
       return;
     }
 
@@ -68,6 +72,12 @@ export default function GuestList({ guests, updateGuests, seatLimit }) {
       <h5>
         Guests ({guests.length} / {seatLimit})
       </h5>
+
+      {alertMessage && (
+        <Alert variant="danger" onClose={() => setAlertMessage('')} dismissible>
+          {alertMessage}
+        </Alert>
+      )}
 
       {/* New guest input */}
       <Form className="mb-3">
